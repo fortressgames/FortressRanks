@@ -2,7 +2,6 @@ package net.fortressgames.fortressranksbungee.users;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
-import net.fortressgames.fortressbungeeessentials.utils.Config;
 import net.fortressgames.fortressranksbungee.FortressRanksBungee;
 import net.fortressgames.fortressranksbungee.ranks.Rank;
 import net.fortressgames.fortressranksbungee.ranks.RankModule;
@@ -22,28 +21,22 @@ public class User {
 
 	@SneakyThrows
 	public User(ProxiedPlayer player) {
-
-		if(FortressRanksBungee.getInstance().isMysql()) {
-			//TODO MYSQL LOAD RANKS
-
-		} else {
-			File playerFile = new File(FortressRanksBungee.getInstance().getDataFolder() + "/PlayerRanks/" + player.getUniqueId().toString() + ".yml");
-			if(!playerFile.exists()) {
-				playerFile.createNewFile();
-
-				Configuration config = YamlConfiguration.getProvider(YamlConfiguration.class).load(playerFile);
-				config.set("Ranks", new ArrayList<>(Collections.singleton(
-						FortressRanksBungee.getInstance().getSettings().getString("Default-Rank")
-				)));
-
-				ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, playerFile);
-			}
+		File playerFile = new File(FortressRanksBungee.getInstance().getDataFolder() + "/PlayerRanks/" + player.getUniqueId().toString() + ".yml");
+		if(!playerFile.exists()) {
+			playerFile.createNewFile();
 
 			Configuration config = YamlConfiguration.getProvider(YamlConfiguration.class).load(playerFile);
-			config.getStringList("Ranks").forEach(rankID -> this.ranks.add(
-					RankModule.getInstance().getRank(rankID)
-			));
+			config.set("Ranks", new ArrayList<>(Collections.singleton(
+					FortressRanksBungee.getInstance().getSettings().getString("Default-Rank")
+			)));
+
+			ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, playerFile);
 		}
+
+		Configuration config = YamlConfiguration.getProvider(YamlConfiguration.class).load(playerFile);
+		config.getStringList("Ranks").forEach(rankID -> this.ranks.add(
+				RankModule.getInstance().getRank(rankID)
+		));
 	}
 
 	/**

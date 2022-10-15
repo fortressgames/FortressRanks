@@ -25,10 +25,6 @@ public class RankModule {
 		return this.ranks.get(rankID);
 	}
 
-	public void loadRanksFromSQL() {
-		//TODO
-	}
-
 	@SneakyThrows
 	public void loadRanksFromConfig() {
 		File rankFile = new File(FortressRanksBungee.getInstance().getDataFolder() + "/Ranks.yml");

@@ -16,7 +16,6 @@ import java.util.ArrayList;
 public class FortressRanksBungee extends Plugin {
 
 	@Getter	private static FortressRanksBungee instance;
-	@Getter private boolean mysql;
 
 	@Getter private Configuration settings;
 
@@ -35,24 +34,6 @@ public class FortressRanksBungee extends Plugin {
 		if(!playerRanks.exists()) playerRanks.mkdir();
 
 		/*
-		 * MYSQL
-		 */
-		File sql = new File(getDataFolder() + "/MYSQL.yml");
-		if(!sql.exists()) sql.createNewFile();
-
-		Configuration sqlConfig = YamlConfiguration.getProvider(YamlConfiguration.class).load(sql);
-
-		if(!sqlConfig.contains("host")) {
-			sqlConfig.set("host", "localhost");
-			sqlConfig.set("port", 3306);
-			sqlConfig.set("database", "ranks");
-			sqlConfig.set("user", "root");
-			sqlConfig.set("password", "");
-
-			ConfigurationProvider.getProvider(YamlConfiguration.class).save(sqlConfig, sql);
-		}
-
-		/*
 		 * Settings
 		 */
 		File settings = new File(getDataFolder() + "/Settings.yml");
@@ -60,15 +41,13 @@ public class FortressRanksBungee extends Plugin {
 
 		Configuration settingsConfig = YamlConfiguration.getProvider(YamlConfiguration.class).load(settings);
 
-		if(!settingsConfig.contains("MYSQL")) {
-			settingsConfig.set("MYSQL", false);
+		if(!settingsConfig.contains("Default-Rank")) {
 			settingsConfig.set("Default-Rank", "DEFAULT");
 
 			ConfigurationProvider.getProvider(YamlConfiguration.class).save(settingsConfig, settings);
 		}
 
 		this.settings = settingsConfig;
-		this.mysql = settingsConfig.getBoolean("MYSQL");
 
 		/*
 		 * Ranks
@@ -105,11 +84,7 @@ public class FortressRanksBungee extends Plugin {
 	public void onEnable() {
 		instance = this;
 
-		if(mysql) {
-			RankModule.getInstance().loadRanksFromSQL();
-		} else {
-			RankModule.getInstance().loadRanksFromConfig();
-		}
+		RankModule.getInstance().loadRanksFromConfig();
 
 		// Listeners
 		getProxy().getPluginManager().registerListener(this, UserModule.getInstance());
@@ -125,3 +100,8 @@ public class FortressRanksBungee extends Plugin {
 		getLogger().info(ConsoleMessage.RED + "Version: " + getDescription().getVersion() + " Disabled!" + ConsoleMessage.RESET);
 	}
 }
+
+//TODO
+// rank command
+// load permissions user
+// send bungee plugin message
