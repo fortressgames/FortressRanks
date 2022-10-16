@@ -1,5 +1,6 @@
 package net.fortressgames.fortressranksbungee.ranks;
 
+import lombok.Getter;
 import lombok.SneakyThrows;
 import net.fortressgames.fortressranksbungee.FortressRanksBungee;
 import net.md_5.bungee.config.Configuration;
@@ -10,7 +11,7 @@ import java.util.HashMap;
 
 public class RankModule {
 
-	private final HashMap<String, Rank> ranks = new HashMap<>();
+	@Getter private final HashMap<String, Rank> ranks = new HashMap<>();
 	private static RankModule instance;
 
 	public static RankModule getInstance() {
@@ -32,7 +33,7 @@ public class RankModule {
 
 		for(String rank : ranksConfig.getKeys()) {
 
-			this.ranks.put(ranksConfig.getString(rank + ".RankID"), new Rank(
+			this.ranks.put(ranksConfig.getString(rank + ".RankID").toUpperCase(), new Rank(
 					ranksConfig.getString(rank + ".RankID"), ranksConfig.getString(rank + ".Prefix"), ranksConfig.getInt(rank + ".Power"),
 					ranksConfig.getStringList(rank + ".Permissions")
 			));
