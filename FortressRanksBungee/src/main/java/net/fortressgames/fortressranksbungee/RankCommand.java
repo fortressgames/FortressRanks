@@ -85,45 +85,18 @@ public class RankCommand extends CommandBase {
 						Configuration config = YamlConfiguration.getProvider(YamlConfiguration.class).load(playerFile);
 
 						if(args[1].equalsIgnoreCase("add")) {
-
 							if(config.getStringList("Ranks").contains(rank.rankID())) {
 								sender.sendMessage(TextComponent.fromLegacyText(RankLang.PLAYER_ALREADY_RANK));
 								return;
 							}
 
-							if(ProxyServer.getInstance().getPlayer(UUID.fromString(uuid)) != null &&
-									ProxyServer.getInstance().getPlayer(UUID.fromString(uuid)).isConnected()) {
-								UserModule.getInstance().getUser(ProxyServer.getInstance().getPlayer(UUID.fromString(uuid))).getRanks().add(rank);
-								ProxyServer.getInstance().getPlayer(UUID.fromString(uuid)).sendMessage(TextComponent.fromLegacyText(RankLang.UPDATE_RANK));
-							}
-
-							List<String> list = config.getStringList("Ranks");
-							list.add(rank.rankID());
-							config.set("Ranks", list);
-							ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, playerFile);
-
-							ProxyServer.getInstance().getPluginManager().callEvent(new RankAddEvent(UUID.fromString(uuid), rank));
-
+							UserModule.getInstance().addRank(UUID.fromString(uuid), rank);
 							sender.sendMessage(TextComponent.fromLegacyText(RankLang.ADD_RANK));
 							return;
 						}
 
 						if(args[1].equalsIgnoreCase("remove")) {
-
-							if(ProxyServer.getInstance().getPlayer(UUID.fromString(uuid)) != null &&
-									ProxyServer.getInstance().getPlayer(UUID.fromString(uuid)).isConnected()) {
-								UserModule.getInstance().getUser(ProxyServer.getInstance().getPlayer(UUID.fromString(uuid))).getRanks().remove(rank);
-								ProxyServer.getInstance().getPlayer(UUID.fromString(uuid)).sendMessage(TextComponent.fromLegacyText(RankLang.UPDATE_RANK));
-
-							}
-
-							List<String> list = config.getStringList("Ranks");
-							list.remove(rank.rankID());
-							config.set("Ranks", list);
-							ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, playerFile);
-
-							ProxyServer.getInstance().getPluginManager().callEvent(new RankRemoveEvent(UUID.fromString(uuid), rank));
-
+							UserModule.getInstance().removeRank(UUID.fromString(uuid), rank);
 							sender.sendMessage(TextComponent.fromLegacyText(RankLang.REMOVE_RANK));
 							return;
 						}

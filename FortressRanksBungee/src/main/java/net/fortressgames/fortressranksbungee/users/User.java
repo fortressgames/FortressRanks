@@ -17,10 +17,13 @@ import java.util.List;
 
 public class User {
 
+	private final ProxiedPlayer player;
 	@Getter private final List<Rank> ranks = new ArrayList<>();
 
 	@SneakyThrows
 	public User(ProxiedPlayer player) {
+		this.player = player;
+
 		File playerFile = new File(FortressRanksBungee.getInstance().getDataFolder() + "/PlayerRanks/" + player.getUniqueId().toString() + ".yml");
 		if(!playerFile.exists()) {
 			playerFile.createNewFile();
@@ -37,6 +40,19 @@ public class User {
 		config.getStringList("Ranks").forEach(rankID -> this.ranks.add(
 				RankModule.getInstance().getRank(rankID)
 		));
+
+		loadPermission();
+	}
+
+	private void loadPermission() {
+		for(Rank rank : this.ranks) {
+
+			for(String permission : rank.permissions()) {
+				if(!permission.contains("bungee")) continue;
+
+				player.setPermission(permission, true);
+			}
+		}
 	}
 
 	/**

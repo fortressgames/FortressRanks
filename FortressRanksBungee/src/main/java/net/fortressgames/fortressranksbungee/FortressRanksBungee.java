@@ -89,6 +89,7 @@ public class FortressRanksBungee extends Plugin {
 		// Listeners
 		getProxy().getPluginManager().registerListener(this, UserModule.getInstance());
 
+		// Commands
 		getProxy().getPluginManager().registerCommand(this, new RankCommand());
 
 		getLogger().info(ConsoleMessage.GREEN + "Version: " + getDescription().getVersion() + " Enabled!" + ConsoleMessage.RESET);
@@ -104,5 +105,5 @@ public class FortressRanksBungee extends Plugin {
 }
 
 //TODO
-// load permissions user
 // send bungee plugin message
+// MYSQL for user ranks
