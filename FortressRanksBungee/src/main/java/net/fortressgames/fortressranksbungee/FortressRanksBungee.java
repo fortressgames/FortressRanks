@@ -105,5 +105,4 @@ public class FortressRanksBungee extends Plugin {
 }
 
 //TODO
-// send bungee plugin message
 // MYSQL for user ranks

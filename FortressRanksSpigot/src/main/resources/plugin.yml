@@ -1,0 +1,6 @@
+name: FortressRanksSpigot
+main: net.fortressgames.fortressranksspigot.FortressRanksSpigot
+version: 1.0
+author: FortressGames
+depend:
+  - FortressAPI

@@ -12,12 +12,15 @@ import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -110,5 +113,32 @@ public class RankCommand extends CommandBase {
 				}
 			}, args[0]);
 		}
+	}
+
+	@Override
+	public Iterable<String> onTabComplete(CommandSender sender, String[] args) {
+		if(args.length == 1) {
+			List<String> players = new ArrayList<>();
+			for(ProxiedPlayer pp : ProxyServer.getInstance().getPlayers()) {
+				players.add(pp.getName());
+			}
+
+			return players;
+		}
+
+		if(args.length == 2) {
+			return Arrays.asList("info", "add", "remove");
+		}
+
+		if(args[1].equalsIgnoreCase("add") || args[1].equalsIgnoreCase("remove")) {
+			List<String> rankID = new ArrayList<>();
+			for(Rank rank : RankModule.getInstance().getRanks().values()) {
+				rankID.add(rank.rankID());
+			}
+
+			return rankID;
+		}
+
+		return super.onTabComplete(sender, args);
 	}
 }
