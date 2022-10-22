@@ -1,12 +1,20 @@
 package net.fortressgames.fortressranksspigot.listener;
 
+import net.fortressgames.fortressapi.utils.ConsoleMessage;
+import net.fortressgames.fortressranksspigot.events.RankAddEvent;
+import net.fortressgames.fortressranksspigot.events.RankRemoveEvent;
+import net.fortressgames.fortressranksspigot.ranks.RankModule;
+import net.fortressgames.fortressranksspigot.users.UserModule;
 import net.fortressgames.pluginmessage.PluginMessage;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.List;
+import java.util.UUID;
 
 public class ReceiveListener implements PluginMessageListener {
 
@@ -22,7 +30,35 @@ public class ReceiveListener implements PluginMessageListener {
 			ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
 			PluginMessage pluginMessage = (PluginMessage) objectInputStream.readObject();
 
-			System.out.println(pluginMessage.getAction());
+			if(!pluginMessage.isSilent()) {
+				System.out.println(ConsoleMessage.YELLOW + "[Bungee Message Channel] " + pluginMessage.getAction() + ", " + pluginMessage.getArgs() + ConsoleMessage.RESET);
+			}
+
+			UUID uuid = UUID.fromString(pluginMessage.getArgs().get(0).toString());
+
+			switch (pluginMessage.getAction()) {
+				case "LOAD_RANKS" -> {
+					for(String rank : List.of(pluginMessage.getArgs().get(1).toString())) {
+						UserModule.getInstance().getUser(Bukkit.getPlayer(uuid)).getRanks().add(RankModule.getInstance().getRank(rank));
+					}
+				}
+
+				case "ADD_RANK" -> {
+					Bukkit.getPluginManager().callEvent(new RankAddEvent(uuid, RankModule.getInstance().getRank(pluginMessage.getArgs().get(1).toString())));
+
+					UserModule.getInstance().getUser(Bukkit.getPlayer(uuid)).getRanks()
+							.add(RankModule.getInstance().getRank(pluginMessage.getArgs().get(1).toString()));
+				}
+
+				case "REMOVE_RANK" -> {
+					Bukkit.getPluginManager().callEvent(new RankRemoveEvent(uuid, RankModule.getInstance().getRank(pluginMessage.getArgs().get(1).toString())));
+
+					UserModule.getInstance().getUser(Bukkit.getPlayer(uuid)).getRanks()
+							.remove(RankModule.getInstance().getRank(pluginMessage.getArgs().get(1).toString()));
+				}
+			}
+
+			UserModule.getInstance().getUser(Bukkit.getPlayer(uuid)).loadPermission();
 
 		} catch (IOException | ClassNotFoundException e) {
 			e.printStackTrace();

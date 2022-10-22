@@ -1,19 +1,30 @@
 package net.fortressgames.fortressranksspigot;
 
 import lombok.Getter;
+import lombok.SneakyThrows;
+import net.fortressgames.fortressapi.commands.CommandModule;
+import net.fortressgames.fortressapi.players.PlayerModule;
 import net.fortressgames.fortressapi.utils.ConsoleMessage;
 import net.fortressgames.fortressranksspigot.listener.ReceiveListener;
+import net.fortressgames.fortressranksspigot.ranks.RankModule;
+import net.fortressgames.fortressranksspigot.users.UserModule;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.io.File;
+import java.util.ArrayList;
 
 public class FortressRanksSpigot extends JavaPlugin {
 
 	@Getter	private static FortressRanksSpigot instance;
-	private boolean bungee;
+	@Getter private boolean bungee;
 
 	/**
 	 * Called when plugin first loads by spigot and is called before onEnable
 	 */
 	@Override
+	@SneakyThrows
 	public void onLoad() {
 		// Create Default folder
 		if(!getDataFolder().exists()) {
@@ -29,6 +40,41 @@ public class FortressRanksSpigot extends JavaPlugin {
 		} else {
 			bungee = getConfig().getBoolean("Bungee");
 		}
+
+		if(!getConfig().contains("Default-Rank")) {
+			getConfig().set("Default-Rank", "DEFAULT");
+			saveConfig();
+		}
+
+		File playerRanks = new File(getDataFolder() + "/PlayerRanks");
+		if(!playerRanks.exists()) playerRanks.mkdir();
+
+		/*
+		 * Ranks
+		 */
+		File ranks = new File(getDataFolder() + "/Ranks.yml");
+		if(!ranks.exists()) {
+			ranks.createNewFile();
+
+			YamlConfiguration ranksConfig = YamlConfiguration.loadConfiguration(ranks);
+
+			ranksConfig.set("DEFAULT.RankID", "DEFAULT");
+			ranksConfig.set("DEFAULT.Prefix", "&7[DEFAULT]");
+			ranksConfig.set("DEFAULT.Power", 0);
+			ranksConfig.set("DEFAULT.Permissions", new ArrayList<>());
+
+			ranksConfig.set("ADMIN.RankID", "ADMIN");
+			ranksConfig.set("ADMIN.Prefix", "&c[ADMIN]");
+			ranksConfig.set("ADMIN.Power", 50);
+			ranksConfig.set("ADMIN.Permissions", new ArrayList<>());
+
+			ranksConfig.set("OWNER.RankID", "OWNER");
+			ranksConfig.set("OWNER.Prefix", "&c[OWNER]");
+			ranksConfig.set("OWNER.Power", 51);
+			ranksConfig.set("OWNER.Permissions", new ArrayList<>());
+
+			ranksConfig.save(ranks);
+		}
 	}
 
 	/**
@@ -38,9 +84,20 @@ public class FortressRanksSpigot extends JavaPlugin {
 	public void onEnable() {
 		instance = this;
 
+		RankModule.getInstance().loadRanksFromConfig();
+
+		getServer().getPluginManager().registerEvents(UserModule.getInstance(), this);
+
 		if(bungee) {
 			this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 			this.getServer().getMessenger().registerIncomingPluginChannel(this, "BungeeCord", new ReceiveListener());
+		} else {
+			CommandModule.registerCommand(new RankCommand());
+		}
+
+		// Adds players after reload
+		for(Player pp : PlayerModule.getInstance().getOnlinePlayers()) {
+			UserModule.getInstance().addUser(pp);
 		}
 
 		getLogger().info(ConsoleMessage.GREEN + "Version: " + getDescription().getVersion() + " Enabled!" + ConsoleMessage.RESET);

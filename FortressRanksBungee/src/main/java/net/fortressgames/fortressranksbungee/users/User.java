@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import net.fortressgames.fortressranksbungee.FortressRanksBungee;
 import net.fortressgames.fortressranksbungee.ranks.Rank;
 import net.fortressgames.fortressranksbungee.ranks.RankModule;
+import net.fortressgames.pluginmessage.PluginMessage;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
@@ -40,6 +41,12 @@ public class User {
 		config.getStringList("Ranks").forEach(rankID -> this.ranks.add(
 				RankModule.getInstance().getRank(rankID)
 		));
+
+		List<String> rankList = new ArrayList<>();
+		for(Rank rank : ranks) {
+			rankList.add(rank.rankID());
+		}
+		UserModule.getInstance().sendPluginMessage(new PluginMessage("LOAD_RANKS", false, player.getUniqueId().toString(), rankList));
 
 		loadPermission();
 	}
