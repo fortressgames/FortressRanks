@@ -53,7 +53,12 @@ public class RankCommand extends CommandBase {
 							sender.sendMessage(ChatColor.GOLD + "Ranks:");
 
 							for(PlayerRanksDB playerRankDB : playerGroupsDB) {
-								sender.sendMessage(ChatColor.WHITE + playerRankDB.getRankID());
+								Rank rank = RankModule.getInstance().getRank(playerRankDB.getRankID());
+
+								sender.sendMessage(
+										ChatColor.WHITE + rank.rankID() + " : "
+												+ rank.prefix()
+								);
 							}
 
 							sender.sendMessage(Lang.LINE);
@@ -68,8 +73,12 @@ public class RankCommand extends CommandBase {
 						sender.sendMessage(Lang.LINE);
 						sender.sendMessage(ChatColor.GOLD + "Ranks:");
 
-						for(String rank : config.getStringList("Ranks")) {
-							sender.sendMessage(ChatColor.WHITE + rank);
+						for(String rankString : config.getStringList("Ranks")) {
+							Rank rank = RankModule.getInstance().getRank(rankString);
+							sender.sendMessage(
+									ChatColor.WHITE + rank.rankID() + " : "
+											+ rank.prefix()
+							);
 						}
 
 						sender.sendMessage(Lang.LINE);

@@ -60,7 +60,12 @@ public class RankCommand extends CommandBase {
 							sender.sendMessage(TextComponent.fromLegacyText(ChatColor.GOLD + "Ranks:"));
 
 							for(PlayerRanksDB playerRankDB : playerGroupsDB) {
-								sender.sendMessage(TextComponent.fromLegacyText(ChatColor.WHITE + playerRankDB.getRankID()));
+								Rank rank = RankModule.getInstance().getRank(playerRankDB.getRankID());
+
+								sender.sendMessage(TextComponent.fromLegacyText(
+										ChatColor.WHITE + rank.rankID() + " : "
+										+ rank.prefix()
+								));
 							}
 
 							sender.sendMessage(Lang.LINE);
@@ -76,8 +81,13 @@ public class RankCommand extends CommandBase {
 							sender.sendMessage(Lang.LINE);
 							sender.sendMessage(TextComponent.fromLegacyText(ChatColor.GOLD + "Ranks:"));
 
-							for(String rank : config.getStringList("Ranks")) {
-								sender.sendMessage(TextComponent.fromLegacyText(ChatColor.WHITE + rank));
+							for(String rankString : config.getStringList("Ranks")) {
+								Rank rank = RankModule.getInstance().getRank(rankString);
+
+								sender.sendMessage(TextComponent.fromLegacyText(
+										ChatColor.WHITE + rank.rankID() + " : "
+												+ rank.prefix()
+								));
 							}
 							sender.sendMessage(Lang.LINE);
 
