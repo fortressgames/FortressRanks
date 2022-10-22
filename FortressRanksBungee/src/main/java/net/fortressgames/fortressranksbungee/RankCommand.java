@@ -1,5 +1,8 @@
 package net.fortressgames.fortressranksbungee;
 
+import net.fortressgames.database.QueryHandler;
+import net.fortressgames.database.manager.PlayerRanksManager;
+import net.fortressgames.database.models.PlayerRanksDB;
 import net.fortressgames.fortressbungeeessentials.Lang;
 import net.fortressgames.fortressbungeeessentials.commands.CommandBase;
 import net.fortressgames.fortressbungeeessentials.utils.UUIDHandler;
@@ -47,20 +50,40 @@ public class RankCommand extends CommandBase {
 			UUIDHandler.getUUIDFromName((successful, uuid) -> {
 				if(successful) {
 
-					try {
-						File playerFile = new File(FortressRanksBungee.getInstance().getDataFolder() + "/PlayerRanks/" + uuid + ".yml");
-						Configuration config = YamlConfiguration.getProvider(YamlConfiguration.class).load(playerFile);
+					// SQL
+					if(FortressRanksBungee.getInstance().isSql()) {
+						QueryHandler<List<PlayerRanksDB>> playerRanksQuery = PlayerRanksManager.getPlayerRanks(uuid);
 
-						sender.sendMessage(Lang.LINE);
-						sender.sendMessage(TextComponent.fromLegacyText(ChatColor.GOLD + "Ranks:"));
+						playerRanksQuery.onComplete(playerGroupsDB -> {
 
-						for(String rank : config.getStringList("Ranks")) {
-							sender.sendMessage(TextComponent.fromLegacyText(ChatColor.WHITE + rank));
+							sender.sendMessage(Lang.LINE);
+							sender.sendMessage(TextComponent.fromLegacyText(ChatColor.GOLD + "Ranks:"));
+
+							for(PlayerRanksDB playerRankDB : playerGroupsDB) {
+								sender.sendMessage(TextComponent.fromLegacyText(ChatColor.WHITE + playerRankDB.getRankID()));
+							}
+
+							sender.sendMessage(Lang.LINE);
+						});
+						playerRanksQuery.execute();
+
+					// CONFIG
+					} else {
+						try {
+							File playerFile = new File(FortressRanksBungee.getInstance().getDataFolder() + "/PlayerRanks/" + uuid + ".yml");
+							Configuration config = YamlConfiguration.getProvider(YamlConfiguration.class).load(playerFile);
+
+							sender.sendMessage(Lang.LINE);
+							sender.sendMessage(TextComponent.fromLegacyText(ChatColor.GOLD + "Ranks:"));
+
+							for(String rank : config.getStringList("Ranks")) {
+								sender.sendMessage(TextComponent.fromLegacyText(ChatColor.WHITE + rank));
+							}
+							sender.sendMessage(Lang.LINE);
+
+						} catch (IOException e) {
+							sender.sendMessage(TextComponent.fromLegacyText(RankLang.UNKNOWN_USER));
 						}
-						sender.sendMessage(Lang.LINE);
-
-					} catch (IOException e) {
-						sender.sendMessage(TextComponent.fromLegacyText(RankLang.UNKNOWN_USER));
 					}
 
 				} else {

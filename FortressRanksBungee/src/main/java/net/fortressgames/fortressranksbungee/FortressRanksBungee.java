@@ -2,6 +2,7 @@ package net.fortressgames.fortressranksbungee;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
+import net.fortressgames.database.Database;
 import net.fortressgames.fortressbungeeessentials.utils.ConsoleMessage;
 import net.fortressgames.fortressranksbungee.ranks.RankModule;
 import net.fortressgames.fortressranksbungee.users.UserModule;
@@ -16,6 +17,8 @@ import java.util.ArrayList;
 public class FortressRanksBungee extends Plugin {
 
 	@Getter	private static FortressRanksBungee instance;
+
+	@Getter private boolean sql;
 
 	@Getter private Configuration settings;
 
@@ -34,6 +37,24 @@ public class FortressRanksBungee extends Plugin {
 		if(!playerRanks.exists()) playerRanks.mkdir();
 
 		/*
+		 * SQL
+		 */
+		File sql = new File(getDataFolder() + "/sql.yml");
+		if(!sql.exists()) sql.createNewFile();
+
+		Configuration config = YamlConfiguration.getProvider(YamlConfiguration.class).load(sql);
+
+		if(!config.contains("host")) {
+			config.set("host", "localhost");
+			config.set("port", 3306);
+			config.set("database", "database");
+			config.set("user", "root");
+			config.set("password", "");
+
+			ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, sql);
+		}
+
+		/*
 		 * Settings
 		 */
 		File settings = new File(getDataFolder() + "/Settings.yml");
@@ -43,10 +64,15 @@ public class FortressRanksBungee extends Plugin {
 
 		if(!settingsConfig.contains("Default-Rank")) {
 			settingsConfig.set("Default-Rank", "DEFAULT");
-
-			ConfigurationProvider.getProvider(YamlConfiguration.class).save(settingsConfig, settings);
 		}
 
+		if(!settingsConfig.contains("SQL")) {
+			settingsConfig.set("SQL", false);
+		} else {
+			this.sql = settingsConfig.getBoolean("SQL");
+		}
+
+		ConfigurationProvider.getProvider(YamlConfiguration.class).save(settingsConfig, settings);
 		this.settings = settingsConfig;
 
 		/*
@@ -74,6 +100,14 @@ public class FortressRanksBungee extends Plugin {
 			ranksConfig.set("OWNER.Permissions", new ArrayList<>());
 
 			ConfigurationProvider.getProvider(YamlConfiguration.class).save(ranksConfig, ranks);
+		}
+
+		if(this.sql) {
+			Database.setHost(config.getString("host"));
+			Database.setPort(config.getInt("port"));
+			Database.setDatabase(config.getString("database"));
+			Database.setUser(config.getString("user"));
+			Database.setPassword(config.getString("password"));
 		}
 	}
 

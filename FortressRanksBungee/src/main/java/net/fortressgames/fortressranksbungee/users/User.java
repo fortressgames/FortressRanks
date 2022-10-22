@@ -2,6 +2,9 @@ package net.fortressgames.fortressranksbungee.users;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
+import net.fortressgames.database.QueryHandler;
+import net.fortressgames.database.manager.PlayerRanksManager;
+import net.fortressgames.database.models.PlayerRanksDB;
 import net.fortressgames.fortressranksbungee.FortressRanksBungee;
 import net.fortressgames.fortressranksbungee.ranks.Rank;
 import net.fortressgames.fortressranksbungee.ranks.RankModule;
@@ -25,30 +28,51 @@ public class User {
 	public User(ProxiedPlayer player) {
 		this.player = player;
 
-		File playerFile = new File(FortressRanksBungee.getInstance().getDataFolder() + "/PlayerRanks/" + player.getUniqueId().toString() + ".yml");
-		if(!playerFile.exists()) {
-			playerFile.createNewFile();
+		if(FortressRanksBungee.getInstance().isSql()) {
+			// Load ranks
+			QueryHandler<List<PlayerRanksDB>> playerRanks = PlayerRanksManager.getPlayerRanks(player.getUniqueId().toString());
+			playerRanks.onComplete(rankDB -> {
+
+				if(rankDB.isEmpty()) {
+					ranks.add(RankModule.getInstance().getRank(FortressRanksBungee.getInstance().getSettings().getString("Default-Rank")));
+					PlayerRanksManager.insertPlayerRank(player.getUniqueId().toString(),
+							RankModule.getInstance().getRank(FortressRanksBungee.getInstance().getSettings().getString("Default-Rank")).rankID()).execute();
+				} else {
+					for(PlayerRanksDB rank : rankDB) {
+						ranks.add(RankModule.getInstance().getRank(rank.getRankID()));
+					}
+				}
+
+				loadPermission();
+			});
+			playerRanks.execute();
+
+		} else {
+			File playerFile = new File(FortressRanksBungee.getInstance().getDataFolder() + "/PlayerRanks/" + player.getUniqueId().toString() + ".yml");
+			if(!playerFile.exists()) {
+				playerFile.createNewFile();
+
+				Configuration config = YamlConfiguration.getProvider(YamlConfiguration.class).load(playerFile);
+				config.set("Ranks", new ArrayList<>(Collections.singleton(
+						FortressRanksBungee.getInstance().getSettings().getString("Default-Rank")
+				)));
+
+				ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, playerFile);
+			}
 
 			Configuration config = YamlConfiguration.getProvider(YamlConfiguration.class).load(playerFile);
-			config.set("Ranks", new ArrayList<>(Collections.singleton(
-					FortressRanksBungee.getInstance().getSettings().getString("Default-Rank")
-			)));
+			config.getStringList("Ranks").forEach(rankID -> this.ranks.add(
+					RankModule.getInstance().getRank(rankID)
+			));
 
-			ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, playerFile);
+			List<String> rankList = new ArrayList<>();
+			for(Rank rank : ranks) {
+				rankList.add(rank.rankID());
+			}
+			UserModule.getInstance().sendPluginMessage(new PluginMessage("LOAD_RANKS", false, player.getUniqueId().toString(), rankList));
+
+			loadPermission();
 		}
-
-		Configuration config = YamlConfiguration.getProvider(YamlConfiguration.class).load(playerFile);
-		config.getStringList("Ranks").forEach(rankID -> this.ranks.add(
-				RankModule.getInstance().getRank(rankID)
-		));
-
-		List<String> rankList = new ArrayList<>();
-		for(Rank rank : ranks) {
-			rankList.add(rank.rankID());
-		}
-		UserModule.getInstance().sendPluginMessage(new PluginMessage("LOAD_RANKS", false, player.getUniqueId().toString(), rankList));
-
-		loadPermission();
 	}
 
 	private void loadPermission() {

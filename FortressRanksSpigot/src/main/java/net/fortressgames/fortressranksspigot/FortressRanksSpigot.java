@@ -2,6 +2,7 @@ package net.fortressgames.fortressranksspigot;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
+import net.fortressgames.database.Database;
 import net.fortressgames.fortressapi.commands.CommandModule;
 import net.fortressgames.fortressapi.players.PlayerModule;
 import net.fortressgames.fortressapi.utils.ConsoleMessage;
@@ -19,6 +20,7 @@ public class FortressRanksSpigot extends JavaPlugin {
 
 	@Getter	private static FortressRanksSpigot instance;
 	@Getter private boolean bungee;
+	@Getter private boolean sql;
 
 	/**
 	 * Called when plugin first loads by spigot and is called before onEnable
@@ -31,6 +33,30 @@ public class FortressRanksSpigot extends JavaPlugin {
 			getDataFolder().mkdir();
 		}
 
+		File playerRanks = new File(getDataFolder() + "/PlayerRanks");
+		if(!playerRanks.exists()) playerRanks.mkdir();
+
+		/*
+		 * SQL
+		 */
+		File sql = new File(getDataFolder() + "/sql.yml");
+		if(!sql.exists()) sql.createNewFile();
+
+		YamlConfiguration config = YamlConfiguration.loadConfiguration(sql);
+
+		if(!config.contains("host")) {
+			config.set("host", "localhost");
+			config.set("port", 3306);
+			config.set("database", "database");
+			config.set("user", "root");
+			config.set("password", "");
+
+			config.save(sql);
+		}
+
+		/*
+		 * Settings
+		 */
 		getConfig().options().copyDefaults(true);
 		saveConfig();
 
@@ -46,8 +72,12 @@ public class FortressRanksSpigot extends JavaPlugin {
 			saveConfig();
 		}
 
-		File playerRanks = new File(getDataFolder() + "/PlayerRanks");
-		if(!playerRanks.exists()) playerRanks.mkdir();
+		if(!getConfig().contains("SQL")) {
+			getConfig().set("SQL", false);
+			saveConfig();
+		} else {
+			this.sql = getConfig().getBoolean("SQL");
+		}
 
 		/*
 		 * Ranks
@@ -74,6 +104,14 @@ public class FortressRanksSpigot extends JavaPlugin {
 			ranksConfig.set("OWNER.Permissions", new ArrayList<>());
 
 			ranksConfig.save(ranks);
+		}
+
+		if(this.sql) {
+			Database.setHost(config.getString("host"));
+			Database.setPort(config.getInt("port"));
+			Database.setDatabase(config.getString("database"));
+			Database.setUser(config.getString("user"));
+			Database.setPassword(config.getString("password"));
 		}
 	}
 

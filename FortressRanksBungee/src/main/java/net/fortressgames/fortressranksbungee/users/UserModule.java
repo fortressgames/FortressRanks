@@ -1,6 +1,7 @@
 package net.fortressgames.fortressranksbungee.users;
 
 import lombok.SneakyThrows;
+import net.fortressgames.database.manager.PlayerRanksManager;
 import net.fortressgames.fortressranksbungee.FortressRanksBungee;
 import net.fortressgames.fortressranksbungee.RankLang;
 import net.fortressgames.fortressranksbungee.events.RankAddEvent;
@@ -60,43 +61,63 @@ public class UserModule implements Listener {
 
 	@SneakyThrows
 	public void addRank(UUID uuid, Rank rank) {
-		File playerFile = new File(FortressRanksBungee.getInstance().getDataFolder() + "/PlayerRanks/" + uuid.toString() + ".yml");
-		Configuration config = YamlConfiguration.getProvider(YamlConfiguration.class).load(playerFile);
+		if(FortressRanksBungee.getInstance().isSql()) {
+			PlayerRanksManager.insertPlayerRank(uuid.toString(), rank.rankID()).execute();
 
-		if(ProxyServer.getInstance().getPlayer(uuid) != null &&
-				ProxyServer.getInstance().getPlayer(uuid).isConnected()) {
-			UserModule.getInstance().getUser(ProxyServer.getInstance().getPlayer(uuid)).getRanks().add(rank);
-			ProxyServer.getInstance().getPlayer(uuid).sendMessage(TextComponent.fromLegacyText(RankLang.UPDATE_RANK));
+			if(ProxyServer.getInstance().getPlayer(uuid) != null &&
+					ProxyServer.getInstance().getPlayer(uuid).isConnected()) {
+				UserModule.getInstance().getUser(ProxyServer.getInstance().getPlayer(uuid)).getRanks().add(rank);
+				ProxyServer.getInstance().getPlayer(uuid).sendMessage(TextComponent.fromLegacyText(RankLang.UPDATE_RANK));
+			}
+
+		} else {
+			File playerFile = new File(FortressRanksBungee.getInstance().getDataFolder() + "/PlayerRanks/" + uuid.toString() + ".yml");
+			Configuration config = YamlConfiguration.getProvider(YamlConfiguration.class).load(playerFile);
+
+			if(ProxyServer.getInstance().getPlayer(uuid) != null &&
+					ProxyServer.getInstance().getPlayer(uuid).isConnected()) {
+				UserModule.getInstance().getUser(ProxyServer.getInstance().getPlayer(uuid)).getRanks().add(rank);
+				ProxyServer.getInstance().getPlayer(uuid).sendMessage(TextComponent.fromLegacyText(RankLang.UPDATE_RANK));
+			}
+
+			List<String> list = config.getStringList("Ranks");
+			list.add(rank.rankID());
+			config.set("Ranks", list);
+			ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, playerFile);
 		}
 
-		List<String> list = config.getStringList("Ranks");
-		list.add(rank.rankID());
-		config.set("Ranks", list);
-		ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, playerFile);
-
 		ProxyServer.getInstance().getPluginManager().callEvent(new RankAddEvent(uuid, rank));
-
 		sendPluginMessage(new PluginMessage("ADD_RANK", true, uuid.toString(), rank.rankID()));
 	}
 
 	@SneakyThrows
 	public void removeRank(UUID uuid, Rank rank) {
-		File playerFile = new File(FortressRanksBungee.getInstance().getDataFolder() + "/PlayerRanks/" + uuid.toString() + ".yml");
-		Configuration config = YamlConfiguration.getProvider(YamlConfiguration.class).load(playerFile);
+		if(FortressRanksBungee.getInstance().isSql()) {
+			PlayerRanksManager.removePlayerRank(uuid.toString(), rank.rankID()).execute();
 
-		if(ProxyServer.getInstance().getPlayer(uuid) != null &&
-				ProxyServer.getInstance().getPlayer(uuid).isConnected()) {
-			UserModule.getInstance().getUser(ProxyServer.getInstance().getPlayer(uuid)).getRanks().remove(rank);
-			ProxyServer.getInstance().getPlayer(uuid).sendMessage(TextComponent.fromLegacyText(RankLang.UPDATE_RANK));
+			if(ProxyServer.getInstance().getPlayer(uuid) != null &&
+					ProxyServer.getInstance().getPlayer(uuid).isConnected()) {
+				UserModule.getInstance().getUser(ProxyServer.getInstance().getPlayer(uuid)).getRanks().remove(rank);
+				ProxyServer.getInstance().getPlayer(uuid).sendMessage(TextComponent.fromLegacyText(RankLang.UPDATE_RANK));
+			}
+
+		} else {
+			File playerFile = new File(FortressRanksBungee.getInstance().getDataFolder() + "/PlayerRanks/" + uuid.toString() + ".yml");
+			Configuration config = YamlConfiguration.getProvider(YamlConfiguration.class).load(playerFile);
+
+			if(ProxyServer.getInstance().getPlayer(uuid) != null &&
+					ProxyServer.getInstance().getPlayer(uuid).isConnected()) {
+				UserModule.getInstance().getUser(ProxyServer.getInstance().getPlayer(uuid)).getRanks().remove(rank);
+				ProxyServer.getInstance().getPlayer(uuid).sendMessage(TextComponent.fromLegacyText(RankLang.UPDATE_RANK));
+			}
+
+			List<String> list = config.getStringList("Ranks");
+			list.remove(rank.rankID());
+			config.set("Ranks", list);
+			ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, playerFile);
 		}
 
-		List<String> list = config.getStringList("Ranks");
-		list.remove(rank.rankID());
-		config.set("Ranks", list);
-		ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, playerFile);
-
 		ProxyServer.getInstance().getPluginManager().callEvent(new RankRemoveEvent(uuid, rank));
-
 		sendPluginMessage(new PluginMessage("REMOVE_RANK", true, uuid.toString(), rank.rankID()));
 	}
 

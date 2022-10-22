@@ -1,5 +1,8 @@
 package net.fortressgames.fortressranksspigot;
 
+import net.fortressgames.database.QueryHandler;
+import net.fortressgames.database.manager.PlayerRanksManager;
+import net.fortressgames.database.models.PlayerRanksDB;
 import net.fortressgames.fortressapi.Lang;
 import net.fortressgames.fortressapi.commands.CommandBase;
 import net.fortressgames.fortressapi.utils.MojangAPIUtils;
@@ -9,7 +12,6 @@ import net.fortressgames.fortressranksspigot.users.UserModule;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -41,16 +43,37 @@ public class RankCommand extends CommandBase {
 				if(successful) {
 					MojangAPIUtils.Profile profile = new ArrayList<>(result.values()).get(0);
 
-					File playerFile = new File(FortressRanksSpigot.getInstance().getDataFolder() + "/PlayerRanks/" + profile.uuid().toString() + ".yml");
-					YamlConfiguration config = YamlConfiguration.loadConfiguration(playerFile);
+					// SQL
+					if(FortressRanksSpigot.getInstance().isSql()) {
+						QueryHandler<List<PlayerRanksDB>> playerRanksQuery = PlayerRanksManager.getPlayerRanks(profile.uuid().toString());
 
-					sender.sendMessage(Lang.LINE);
-					sender.sendMessage(ChatColor.GOLD + "Ranks:");
+						playerRanksQuery.onComplete(playerGroupsDB -> {
 
-					for(String rank : config.getStringList("Ranks")) {
-						sender.sendMessage(ChatColor.WHITE + rank);
+							sender.sendMessage(Lang.LINE);
+							sender.sendMessage(ChatColor.GOLD + "Ranks:");
+
+							for(PlayerRanksDB playerRankDB : playerGroupsDB) {
+								sender.sendMessage(ChatColor.WHITE + playerRankDB.getRankID());
+							}
+
+							sender.sendMessage(Lang.LINE);
+						});
+						playerRanksQuery.execute();
+
+					// CONFIG
+					} else {
+						File playerFile = new File(FortressRanksSpigot.getInstance().getDataFolder() + "/PlayerRanks/" + profile.uuid().toString() + ".yml");
+						YamlConfiguration config = YamlConfiguration.loadConfiguration(playerFile);
+
+						sender.sendMessage(Lang.LINE);
+						sender.sendMessage(ChatColor.GOLD + "Ranks:");
+
+						for(String rank : config.getStringList("Ranks")) {
+							sender.sendMessage(ChatColor.WHITE + rank);
+						}
+
+						sender.sendMessage(Lang.LINE);
 					}
-					sender.sendMessage(Lang.LINE);
 
 				} else {
 					sender.sendMessage(RankLang.UNKNOWN_USER);
