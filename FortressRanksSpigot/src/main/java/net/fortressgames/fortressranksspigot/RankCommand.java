@@ -142,7 +142,7 @@ public class RankCommand extends CommandBase {
 			if(args[1].equalsIgnoreCase("add") || args[1].equalsIgnoreCase("remove")) {
 				List<String> rankID = new ArrayList<>();
 				for(Rank rank : RankModule.getInstance().getRanks().values()) {
-					rankID.add(rank.rankID());
+					rankID.add(rank.rankID().toLowerCase());
 				}
 
 				return rankID;

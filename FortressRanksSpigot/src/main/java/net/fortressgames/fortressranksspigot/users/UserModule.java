@@ -29,7 +29,6 @@ public class UserModule implements Listener {
 		if(instance == null) {
 			instance = new UserModule();
 		}
-
 		return instance;
 	}
 
@@ -43,9 +42,7 @@ public class UserModule implements Listener {
 
 	@EventHandler
 	public void join(PlayerJoinEvent e) {
-		Player player = e.getPlayer();
-
-		addUser(player);
+		addUser(e.getPlayer());
 	}
 
 	@EventHandler
@@ -55,26 +52,14 @@ public class UserModule implements Listener {
 
 	@SneakyThrows
 	public void addRank(UUID uuid, Rank rank) {
+		Player target = Bukkit.getPlayer(uuid);
+
 		if(FortressRanksSpigot.getInstance().isSql()) {
 			PlayerRanksManager.insertPlayerRank(uuid.toString(), rank.rankID()).execute();
 
-			Player target = Bukkit.getPlayer(uuid);
-
-			if(target != null) {
-				UserModule.getInstance().getUser(target).getRanks().add(rank);
-				target.sendMessage(RankLang.UPDATE_RANK);
-			}
-
 		} else {
-			File playerFile = new File(FortressRanksSpigot.getInstance().getDataFolder() + "/PlayerRanks/" + uuid.toString() + ".yml");
+			File playerFile = new File(FortressRanksSpigot.getInstance().getDataFolder() + "/PlayerRanks/" + uuid + ".yml");
 			YamlConfiguration config = YamlConfiguration.loadConfiguration(playerFile);
-
-			Player target = Bukkit.getPlayer(uuid);
-
-			if(target != null) {
-				UserModule.getInstance().getUser(target).getRanks().add(rank);
-				target.sendMessage(RankLang.UPDATE_RANK);
-			}
 
 			List<String> list = config.getStringList("Ranks");
 			list.add(rank.rankID());
@@ -83,37 +68,35 @@ public class UserModule implements Listener {
 			config.save(playerFile);
 		}
 
+		if(target != null) {
+			UserModule.getInstance().getUser(target).getRanks().add(rank);
+			target.sendMessage(RankLang.UPDATE_RANK);
+		}
+
 		Bukkit.getPluginManager().callEvent(new RankAddEvent(uuid, rank));
 	}
 
 	@SneakyThrows
 	public void removeRank(UUID uuid, Rank rank) {
+		Player target = Bukkit.getPlayer(uuid);
+
 		if(FortressRanksSpigot.getInstance().isSql()) {
 			PlayerRanksManager.removePlayerRank(uuid.toString(), rank.rankID()).execute();
 
-			Player target = Bukkit.getPlayer(uuid);
-
-			if(target != null) {
-				UserModule.getInstance().getUser(target).getRanks().remove(rank);
-				target.sendMessage(RankLang.UPDATE_RANK);
-			}
-
 		} else {
-			File playerFile = new File(FortressRanksSpigot.getInstance().getDataFolder() + "/PlayerRanks/" + uuid.toString() + ".yml");
+			File playerFile = new File(FortressRanksSpigot.getInstance().getDataFolder() + "/PlayerRanks/" + uuid + ".yml");
 			YamlConfiguration config = YamlConfiguration.loadConfiguration(playerFile);
-
-			Player target = Bukkit.getPlayer(uuid);
-
-			if(target != null) {
-				UserModule.getInstance().getUser(target).getRanks().remove(rank);
-				target.sendMessage(RankLang.UPDATE_RANK);
-			}
 
 			List<String> list = config.getStringList("Ranks");
 			list.remove(rank.rankID());
 			config.set("Ranks", list);
 
 			config.save(playerFile);
+		}
+
+		if(target != null) {
+			UserModule.getInstance().getUser(target).getRanks().remove(rank);
+			target.sendMessage(RankLang.UPDATE_RANK);
 		}
 
 		Bukkit.getPluginManager().callEvent(new RankRemoveEvent(uuid, rank));

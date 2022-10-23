@@ -5,7 +5,6 @@ import lombok.SneakyThrows;
 import net.fortressgames.database.QueryHandler;
 import net.fortressgames.database.manager.PlayerRanksManager;
 import net.fortressgames.database.models.PlayerRanksDB;
-import net.fortressgames.fortressapi.Lang;
 import net.fortressgames.fortressranksspigot.FortressRanksSpigot;
 import net.fortressgames.fortressranksspigot.ranks.Rank;
 import net.fortressgames.fortressranksspigot.ranks.RankModule;
@@ -41,9 +40,7 @@ public class User {
 						PlayerRanksManager.insertPlayerRank(player.getUniqueId().toString(),
 								RankModule.getInstance().getRank(FortressRanksSpigot.getInstance().getConfig().getString("Default-Rank")).rankID()).execute();
 					} else {
-						for(PlayerRanksDB rank : rankDB) {
-							ranks.add(RankModule.getInstance().getRank(rank.getRankID()));
-						}
+						rankDB.forEach(rank -> ranks.add(RankModule.getInstance().getRank(rank.getRankID())));
 					}
 
 					loadPermission();
@@ -82,20 +79,13 @@ public class User {
 		this.playerPerms.clear();
 
 		// Load permissions
-		for(Rank rank : this.ranks) {
+		this.ranks.forEach(rank -> rank.permissions().forEach(permission -> {
 
-			if(rank.permissions() == null) {
-				player.kickPlayer(Lang.RED + "Looks like something when wrong! please try again");
-				return;
-			}
-
-			for(String permission : rank.permissions()) {
-				if(permission.contains("bungee")) continue;
-
+			if(!permission.contains("bungee")) {
 				PermissionAttachment permissionAttachment = player.addAttachment(FortressRanksSpigot.getInstance());
 				permissionAttachment.setPermission(permission, true);
 				this.playerPerms.add(permissionAttachment);
 			}
-		}
+		}));
 	}
 }

@@ -8,7 +8,6 @@ import net.fortressgames.database.models.PlayerRanksDB;
 import net.fortressgames.fortressranksbungee.FortressRanksBungee;
 import net.fortressgames.fortressranksbungee.ranks.Rank;
 import net.fortressgames.fortressranksbungee.ranks.RankModule;
-import net.fortressgames.pluginmessage.PluginMessage;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
@@ -38,9 +37,7 @@ public class User {
 					PlayerRanksManager.insertPlayerRank(player.getUniqueId().toString(),
 							RankModule.getInstance().getRank(FortressRanksBungee.getInstance().getSettings().getString("Default-Rank")).rankID()).execute();
 				} else {
-					for(PlayerRanksDB rank : rankDB) {
-						ranks.add(RankModule.getInstance().getRank(rank.getRankID()));
-					}
+					rankDB.forEach(rank -> ranks.add(RankModule.getInstance().getRank(rank.getRankID())));
 				}
 
 				loadPermission();
@@ -65,25 +62,17 @@ public class User {
 					RankModule.getInstance().getRank(rankID)
 			));
 
-			List<String> rankList = new ArrayList<>();
-			for(Rank rank : ranks) {
-				rankList.add(rank.rankID());
-			}
-			UserModule.getInstance().sendPluginMessage(new PluginMessage("LOAD_RANKS", false, player.getUniqueId().toString(), rankList));
-
 			loadPermission();
 		}
 	}
 
 	private void loadPermission() {
-		for(Rank rank : this.ranks) {
+		this.ranks.forEach(rank -> rank.permissions().forEach(permission -> {
 
-			for(String permission : rank.permissions()) {
-				if(!permission.contains("bungee")) continue;
-
+			if(permission.contains("bungee")) {
 				player.setPermission(permission, true);
 			}
-		}
+		}));
 	}
 
 	/**
