@@ -4,14 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>net.fortressgames</groupId>
-    <artifactId>fortressranksspigot</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <parent>
+        <groupId>net.fortressgames</groupId>
+        <artifactId>fortressranks</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
 
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-    </properties>
+    <artifactId>fortressranksspigot</artifactId>
+    <packaging>jar</packaging>
 
     <repositories>
         <repository>
@@ -65,27 +65,7 @@
     </dependencies>
 
     <build>
-        <finalName>${project.name}</finalName>
         <plugins>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>unpack-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <includes>**/*.class,**/*.yml,**/*.*</includes>
-                            <excludes>**/*.bin</excludes>
-                            <outputDirectory>${project.build.directory}/classes</outputDirectory>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>
-                            <excludeScope>provided</excludeScope>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -97,11 +77,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <url>https://maven.pkg.github.com/fortressgames/fortressranksspigot</url>
-        </repository>
-    </distributionManagement>
 </project>
