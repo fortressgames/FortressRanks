@@ -5,7 +5,7 @@ import net.fortressgames.fortressranksspigot.events.RankAddEvent;
 import net.fortressgames.fortressranksspigot.events.RankRemoveEvent;
 import net.fortressgames.fortressranksspigot.ranks.RankModule;
 import net.fortressgames.fortressranksspigot.users.UserModule;
-import net.fortressgames.pluginmessage.PluginMessage;
+import net.fortressgames.rankschannelmessage.RanksChannelMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
@@ -28,7 +28,7 @@ public class ReceiveListener implements PluginMessageListener {
 		try {
 			ByteArrayInputStream inputStream = new ByteArrayInputStream(message);
 			ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
-			PluginMessage pluginMessage = (PluginMessage) objectInputStream.readObject();
+			RanksChannelMessage pluginMessage = (RanksChannelMessage) objectInputStream.readObject();
 
 			if(!pluginMessage.isSilent()) {
 				System.out.println(ConsoleMessage.YELLOW + "[Bungee Message Channel] " + pluginMessage.getAction() + ", " + pluginMessage.getArgs() + ConsoleMessage.RESET);

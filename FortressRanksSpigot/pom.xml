@@ -30,7 +30,7 @@
 
         <dependency>
             <groupId>net.fortressgames</groupId>
-            <artifactId>pluginmessage</artifactId>
+            <artifactId>rankschannelmessage</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>

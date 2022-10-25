@@ -7,7 +7,7 @@ import net.fortressgames.fortressranksbungee.RankLang;
 import net.fortressgames.fortressranksbungee.events.RankAddEvent;
 import net.fortressgames.fortressranksbungee.events.RankRemoveEvent;
 import net.fortressgames.fortressranksbungee.ranks.Rank;
-import net.fortressgames.pluginmessage.PluginMessage;
+import net.fortressgames.rankschannelmessage.RanksChannelMessage;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -61,7 +61,7 @@ public class UserModule implements Listener {
 		List<String> rankList = new ArrayList<>();
 		getUser(player).getRanks().forEach(rank -> rankList.add(rank.rankID()));
 
-		sendPluginMessage(player, new PluginMessage("LOAD_RANKS", false, player.getUniqueId().toString(), rankList));
+		sendPluginMessage(player, new RanksChannelMessage("LOAD_RANKS", false, player.getUniqueId().toString(), rankList));
 	}
 
 	@SneakyThrows
@@ -85,7 +85,7 @@ public class UserModule implements Listener {
 			UserModule.getInstance().getUser(target).getRanks().add(rank);
 			target.sendMessage(TextComponent.fromLegacyText(RankLang.UPDATE_RANK));
 
-			sendPluginMessage(target, new PluginMessage("ADD_RANK", false, uuid.toString(), rank.rankID()));
+			sendPluginMessage(target, new RanksChannelMessage("ADD_RANK", false, uuid.toString(), rank.rankID()));
 		}
 
 		ProxyServer.getInstance().getPluginManager().callEvent(new RankAddEvent(uuid, rank));
@@ -112,13 +112,13 @@ public class UserModule implements Listener {
 			UserModule.getInstance().getUser(target).getRanks().remove(rank);
 			target.sendMessage(TextComponent.fromLegacyText(RankLang.UPDATE_RANK));
 
-			sendPluginMessage(target, new PluginMessage("REMOVE_RANK", false, uuid.toString(), rank.rankID()));
+			sendPluginMessage(target, new RanksChannelMessage("REMOVE_RANK", false, uuid.toString(), rank.rankID()));
 		}
 
 		ProxyServer.getInstance().getPluginManager().callEvent(new RankRemoveEvent(uuid, rank));
 	}
 
-	public void sendPluginMessage(ProxiedPlayer player, PluginMessage message) {
+	public void sendPluginMessage(ProxiedPlayer player, RanksChannelMessage message) {
 		player.getServer().getInfo().sendData("BungeeCord", message.toByteArray());
 	}
 }

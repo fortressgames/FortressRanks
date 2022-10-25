@@ -1,4 +1,4 @@
-package net.fortressgames.pluginmessage;
+package net.fortressgames.rankschannelmessage;
 
 import lombok.Getter;
 import lombok.ToString;
@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @ToString
-public class PluginMessage implements Serializable {
+public class RanksChannelMessage implements Serializable {
 
 	@Serial	private static final long serialVersionUID = -2190101168498868754L;
 
@@ -25,7 +25,7 @@ public class PluginMessage implements Serializable {
 	/**
 	 * @param args The objects must be serializable!
 	 */
-	public PluginMessage(String action, boolean silent, Object... args) {
+	public RanksChannelMessage(String action, boolean silent, Object... args) {
 		this.action = action;
 		this.silent = silent;
 		this.args = Arrays.asList(args);
