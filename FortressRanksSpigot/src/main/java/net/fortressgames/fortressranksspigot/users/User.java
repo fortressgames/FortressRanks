@@ -88,4 +88,24 @@ public class User {
 			}
 		}));
 	}
+
+	/**
+	 * Return highest rank of the player
+	 */
+	public Rank getHighestRank() {
+		Rank returnRank = null;
+		for(Rank rank : ranks) {
+
+			if(returnRank == null) {
+				returnRank = rank;
+				continue;
+			}
+
+			if(rank.power() >= returnRank.power()) {
+				returnRank = rank;
+			}
+		}
+
+		return returnRank;
+	}
 }

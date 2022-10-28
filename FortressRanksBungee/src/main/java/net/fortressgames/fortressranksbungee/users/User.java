@@ -87,7 +87,7 @@ public class User {
 				continue;
 			}
 
-			if(returnRank.power() >= rank.power()) {
+			if(rank.power() >= returnRank.power()) {
 				returnRank = rank;
 			}
 		}
