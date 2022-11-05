@@ -3,6 +3,7 @@ package net.fortressgames.fortressranksspigot.listener;
 import net.fortressgames.fortressapi.utils.ConsoleMessage;
 import net.fortressgames.fortressranksspigot.events.RankAddEvent;
 import net.fortressgames.fortressranksspigot.events.RankRemoveEvent;
+import net.fortressgames.fortressranksspigot.ranks.Rank;
 import net.fortressgames.fortressranksspigot.ranks.RankModule;
 import net.fortressgames.fortressranksspigot.users.UserModule;
 import net.fortressgames.rankschannelmessage.RanksChannelMessage;
@@ -39,7 +40,10 @@ public class ReceiveListener implements PluginMessageListener {
 			switch (pluginMessage.getAction()) {
 				case "LOAD_RANKS" -> {
 					for(String rank : pluginMessage.getArgs().get(1).toString().replace(" ", "").replace("[", "").replace("]", "").split(",")) {
-						UserModule.getInstance().getUser(Bukkit.getPlayer(uuid)).getRanks().add(RankModule.getInstance().getRank(rank));
+						Rank rank_ = RankModule.getInstance().getRank(rank);
+						if(rank_ == null) continue;
+
+						UserModule.getInstance().getUser(Bukkit.getPlayer(uuid)).getRanks().add(rank_);
 					}
 				}
 
