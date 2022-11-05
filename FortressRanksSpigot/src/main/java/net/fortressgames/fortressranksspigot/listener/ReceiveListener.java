@@ -39,7 +39,7 @@ public class ReceiveListener implements PluginMessageListener {
 			switch (pluginMessage.getAction()) {
 				case "LOAD_RANKS" -> {
 					for(String rank : pluginMessage.getArgs().get(1).toString().replace(" ", "").replace("[", "").replace("]", "").split(",")) {
-						UserModule.getInstance().getUser(Bukkit.getPlayer(uuid)).getRanks().add(RankModule.getInstance().getRank(rank));//here
+						UserModule.getInstance().getUser(Bukkit.getPlayer(uuid)).getRanks().add(RankModule.getInstance().getRank(rank));
 					}
 				}
 

@@ -73,6 +73,14 @@ public class User {
 	}
 
 	public void loadPermission() {
+		if(ranks.isEmpty()) {
+			// no ranks error
+			// Adds default rank
+			UserModule.getInstance().addRank(player.getUniqueId(),
+					RankModule.getInstance().getRank(FortressRanksSpigot.getInstance().getConfig().getString("Default-Rank")));
+			return;
+		}
+
 		for (PermissionAttachment permissionAttachment : this.playerPerms) {
 			player.removeAttachment(permissionAttachment);
 		}
