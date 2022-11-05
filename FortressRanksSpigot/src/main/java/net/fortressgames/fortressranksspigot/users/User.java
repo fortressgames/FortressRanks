@@ -6,8 +6,10 @@ import net.fortressgames.database.QueryHandler;
 import net.fortressgames.database.manager.PlayerRanksManager;
 import net.fortressgames.database.models.PlayerRanksDB;
 import net.fortressgames.fortressranksspigot.FortressRanksSpigot;
+import net.fortressgames.fortressranksspigot.events.RankAddEvent;
 import net.fortressgames.fortressranksspigot.ranks.Rank;
 import net.fortressgames.fortressranksspigot.ranks.RankModule;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
@@ -76,9 +78,9 @@ public class User {
 		if(ranks.isEmpty()) {
 			// no ranks error
 			// Adds default rank
-			UserModule.getInstance().addRank(player.getUniqueId(),
-					RankModule.getInstance().getRank(FortressRanksSpigot.getInstance().getConfig().getString("Default-Rank")));
-			return;
+			Rank default_ = RankModule.getInstance().getRank(FortressRanksSpigot.getInstance().getConfig().getString("Default-Rank"));
+			ranks.add(default_);
+			Bukkit.getPluginManager().callEvent(new RankAddEvent(player.getUniqueId(), default_));
 		}
 
 		for (PermissionAttachment permissionAttachment : this.playerPerms) {
